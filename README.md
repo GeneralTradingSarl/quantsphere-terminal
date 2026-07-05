@@ -48,6 +48,8 @@ Plus **📚 in-app documentation** (⚙ Settings): 40+ LaTeX formulas — model 
 | *Live market ingestion & statistics* | *3-D implied volatility surface from the live chain* |
 | ![Pricing lab](docs/screenshots/04-pricing.png) | ![Optimizer](docs/screenshots/07-optimizer.png) |
 | *Monte Carlo vs PDE vs closed form* | *Walk-forward optimization landscape* |
+| ![Backtest](docs/screenshots/06-backtest.png) | ![Documentation](docs/screenshots/09-documentation.png) |
+| *Causal backtesting with exposure tracking* | *Every formula documented in-app (LaTeX)* |
 
 ## 🚀 Quickstart
 
