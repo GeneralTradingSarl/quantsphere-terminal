@@ -127,6 +127,44 @@ def render_header(engine_label: str = "", native: bool = True) -> None:
     )
 
 
+# One interaction contract for every chart in the terminal:
+# mouse wheel zooms, dragging the plot pans, dragging an axis pans that axis,
+# wheel over an axis zooms that axis only, double-click resets, and the
+# modebar (box zoom, +/-, reset, hi-res PNG export) is always visible.
+PLOTLY_CONFIG = {
+    "scrollZoom": True,
+    "displayModeBar": True,
+    "displaylogo": False,
+    "doubleClick": "reset+autosize",
+    "modeBarButtonsToRemove": ["select2d", "lasso2d"],
+    "toImageButtonOptions": {"format": "png", "scale": 2,
+                             "filename": "quantsphere-chart"},
+}
+
+
+def time_axis_controls(fig: go.Figure, slider: bool = False) -> go.Figure:
+    """Range-selector buttons (1M…All) and optional overview slider for
+    date-axis charts."""
+    fig.update_xaxes(
+        rangeselector=dict(
+            buttons=[
+                dict(count=1, label="1M", step="month", stepmode="backward"),
+                dict(count=3, label="3M", step="month", stepmode="backward"),
+                dict(count=6, label="6M", step="month", stepmode="backward"),
+                dict(count=1, label="YTD", step="year", stepmode="todate"),
+                dict(count=1, label="1Y", step="year", stepmode="backward"),
+                dict(step="all", label="All"),
+            ],
+            bgcolor="rgba(22,27,38,0.85)", activecolor=C.GRID, bordercolor=C.GRID,
+            borderwidth=1, font=dict(size=11, color=C.TEXT),
+            x=0.995, xanchor="right", y=0.985, yanchor="top",
+        ),
+        rangeslider=dict(visible=slider, thickness=0.05, bgcolor=C.PANEL_2,
+                         bordercolor=C.GRID, borderwidth=1),
+    )
+    return fig
+
+
 def style_fig(fig: go.Figure, height: int = 420, title: str | None = None) -> go.Figure:
     fig.update_layout(
         template="plotly_dark",
@@ -139,6 +177,7 @@ def style_fig(fig: go.Figure, height: int = 420, title: str | None = None) -> go
                         font=dict(family="Consolas, monospace", size=12)),
         legend=dict(bgcolor="rgba(0,0,0,0)", borderwidth=0, orientation="h",
                     yanchor="bottom", y=1.02, x=0),
+        dragmode="pan",
     )
     if title:
         fig.update_layout(title=dict(text=title, font=dict(size=14, color=C.MUTED),
