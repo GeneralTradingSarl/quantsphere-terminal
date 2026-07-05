@@ -1,0 +1,15 @@
+[theme]
+base = "dark"
+primaryColor = "#00E5FF"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#161B26"
+textColor = "#E6EDF3"
+
+[server]
+headless = true
+# Windows: the default event-based watcher can crash with PermissionError
+# when an editor/AV holds a file lock; polling is robust.
+fileWatcherType = "poll"
+
+[browser]
+gatherUsageStats = false
