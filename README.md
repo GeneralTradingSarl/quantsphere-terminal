@@ -23,8 +23,6 @@
 
 Quantitative finance tooling is either locked inside institutions (Bloomberg, in-house desk libraries) or scattered across academic notebooks that never touch live data. **QuantSphere Terminal closes that gap**: a single auditable platform where the models of the standard quant curriculum — Black-Scholes PDEs, Heston, jump-diffusions, Kalman filters, GARCH, Markowitz — run **natively in C++** against **real market data**, with the mathematics of every displayed number documented in-app.
 
-It industrializes the excellent notebook collection [cantaro86/Financial-Models-Numerical-Methods](https://github.com/cantaro86/Financial-Models-Numerical-Methods) into a production system.
-
 ## ✨ The eight stages
 
 | Stage | What it does | The hard part underneath |
