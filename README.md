@@ -149,3 +149,24 @@ QuantSphere Terminal is a research and educational instrument. Market data comes
 <div align="center">
 <sub>Built on the shoulders of Black–Scholes–Merton, Heston, Bollerslev, Harvey, Markowitz — and <a href="https://github.com/cantaro86/Financial-Models-Numerical-Methods">cantaro86</a>'s notebooks. Full references in the in-app documentation.</sub>
 </div>
+
+---
+
+<details>
+<summary><b>🔎 Keywords & topics covered by this project</b></summary>
+
+**Institutional trading system** · quantitative finance platform · quant terminal · algorithmic trading system · quantitative analysis software · financial engineering toolkit · quant research platform
+
+**Derivatives & pricing**: options pricing engine · Black-Scholes model · Black-Scholes PDE solver · Crank-Nicolson finite differences · American options (PSOR / linear complementarity) · barrier options (knock-in, knock-out) · exotic options · Monte Carlo simulation · Heston stochastic volatility · Merton jump-diffusion · Variance Gamma process · Lévy processes · option Greeks (delta, gamma, theta) · risk-neutral pricing
+
+**Volatility & forecasting**: implied volatility solver (Newton-Raphson) · 3D volatility surface · volatility smile & skew · options chain analysis · GARCH(1,1) maximum likelihood · EWMA / RiskMetrics · volatility forecasting · probabilistic price forecasting · forecast cones · block bootstrap · Value-at-Risk (VaR) · Expected Shortfall (CVaR)
+
+**Signal processing & strategies**: Kalman filter trading · RTS smoother · state-space models · latent drift estimation · trend following · mean reversion · moving average crossover (SMA/EMA) · volatility targeting · trading signal filters · VWAP
+
+**Backtesting & optimization**: vectorized backtesting engine · look-ahead bias prevention · walk-forward analysis · out-of-sample validation · hyperparameter optimization · overfitting diagnostics · Sharpe ratio · Sortino · Calmar · maximum drawdown · transaction cost modeling · multi-timeframe backtesting
+
+**Portfolio**: Markowitz mean-variance optimization · efficient frontier · maximum Sharpe portfolio · minimum variance portfolio · capital market line · covariance regularization · asset allocation
+
+**Technology**: C++20 quantitative library · pybind11 bindings · high-performance computing · multithreaded Monte Carlo · NumPy · SciPy · pandas · Streamlit dashboard · Plotly 3D visualization · yfinance market data · Python quant stack
+
+</details>
