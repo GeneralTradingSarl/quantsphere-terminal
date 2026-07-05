@@ -22,11 +22,25 @@ from quantsphere import models as qsmodels
 from quantsphere import optimize as qsopt
 from quantsphere import portfolio as qsport
 from ui.docs import render_docs
-from ui.theme import BLUE_GREEN_SCALE, C, PURPLE_SCALE, inject_css, render_header, style_fig
+from ui.theme import (BLUE_GREEN_SCALE, C, PLOTLY_CONFIG, PURPLE_SCALE, inject_css,
+                      render_header, style_fig, time_axis_controls)
 
 st.set_page_config(page_title="QuantSphere Terminal", page_icon="◈", layout="wide",
                    initial_sidebar_state="expanded")
 inject_css()
+
+# Every st.plotly_chart in the app gets the shared interaction config
+# (wheel zoom, axis drag/zoom, always-on modebar) without repeating it at
+# each of the ~25 call sites.
+_st_plotly_chart = st.plotly_chart
+
+
+def _configured_plotly_chart(fig, *args, **kwargs):
+    kwargs.setdefault("config", PLOTLY_CONFIG)
+    return _st_plotly_chart(fig, *args, **kwargs)
+
+
+st.plotly_chart = _configured_plotly_chart
 
 # ---------------------------------------------------------------------------
 # Cached data boundary (pure functions live in quantsphere.data / .portfolio)
@@ -102,6 +116,12 @@ with st.sidebar:
     if st.button("🔄 Force data refresh", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
+    st.markdown(
+        '<p class="qs-note">🖱 <b>Chart controls</b> — wheel: zoom · drag: pan · '
+        'drag or wheel on an axis: scale that axis alone · double-click: reset · '
+        '1M–All buttons on time charts · 📷 modebar: hi-res export</p>',
+        unsafe_allow_html=True,
+    )
     st.divider()
     st.markdown(
         '<p class="qs-note">© 2026 <b>Ismael LADJOHOUNLOU</b><br>'
@@ -321,7 +341,8 @@ with tab_kalman:
                                 text=f"{proj_mean[-1]:,.2f}", showarrow=False,
                                 xanchor="left", font=dict(color=C.BLUE, size=11))
 
-        st.plotly_chart(style_fig(figk, height=460,
+        time_axis_controls(figk, slider=True)
+        st.plotly_chart(style_fig(figk, height=490,
                                   title=f"{ticker} · latent state extraction ({model.lower()})"),
                         use_container_width=True)
 
@@ -707,6 +728,7 @@ with tab_port:
                 pm = qsbt.perf_metrics(pr, float(rf))
                 perf_rows.append((name, pm))
             figpc.update_yaxes(title="Growth of $1", type="log")
+            time_axis_controls(figpc)
             st.plotly_chart(
                 style_fig(figpc, height=400,
                           title=f"Daily-rebalanced to fixed weights · {years}Y realized "
@@ -1066,6 +1088,7 @@ with tab_opt:
                                  text="◀ train | test ▶", showarrow=False,
                                  font=dict(color=C.BLUE, size=11))
             figbe.update_yaxes(title="Growth of $1", type="log")
+            time_axis_controls(figbe)
             st.plotly_chart(style_fig(figbe, height=420,
                                       title=f"Best configuration deployed · {label}"),
                             use_container_width=True)
@@ -1197,6 +1220,7 @@ with tab_fc:
                                 font=dict(color=color, size=11))
         pad = (future_idx[-1] - hist_tail.index[0]) * 0.10
         figf.update_xaxes(range=[hist_tail.index[0], future_idx[-1] + pad])
+        time_axis_controls(figf)
         st.plotly_chart(style_fig(figf, height=460,
                                   title=f"{ticker} · {horizon}-day probabilistic forecast "
                                         f"({method.lower()}, drift = {drift_src})"),
