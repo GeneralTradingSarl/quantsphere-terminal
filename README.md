@@ -4,6 +4,7 @@
 
 ### Institutional-grade quantitative analytics — C++20 numerical core, Python orchestration, live market data
 
+[![Live Demo](https://img.shields.io/badge/%E2%96%B6%20LIVE%20DEMO-streamlit.app-FF4B4B?style=flat-square)](https://quantsphere-terminal-7fkrgemwlfnuhqx5ky5glj.streamlit.app/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-00E5FF?style=flat-square)](LICENSE)
 [![C++20](https://img.shields.io/badge/engine-C%2B%2B20%20%C2%B7%20pybind11-D500F7?style=flat-square)](engine/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-00E676?style=flat-square)](requirements.txt)
@@ -12,7 +13,7 @@
 
 *Eight live pipeline stages: market data → Kalman filtering → volatility surfaces → derivative pricing → portfolio construction → backtesting → walk-forward optimization → probabilistic forecasting. Every formula documented, every number cross-verified.*
 
-**[Screenshots](#-screenshots) · [Quickstart](#-quickstart) · [Architecture](#-architecture) · [Methodology](#-methodology--verification) · [License](#-license--author)**
+**[▶ Try the live demo](https://quantsphere-terminal-7fkrgemwlfnuhqx5ky5glj.streamlit.app/) · [Screenshots](#-screenshots) · [Quickstart](#-quickstart) · [Architecture](#-architecture) · [Methodology](#-methodology--verification) · [License](#-license--author)**
 
 </div>
 
