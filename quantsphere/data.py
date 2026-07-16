@@ -6,8 +6,10 @@ module stays testable and reusable from scripts or notebooks.
 
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -15,12 +17,33 @@ import yfinance as yf
 
 TRADING_DAYS = 252
 
+SNAPSHOT_DIR = Path(__file__).parent / "snapshots"
+
 
 def _flatten(df: pd.DataFrame) -> pd.DataFrame:
     if isinstance(df.columns, pd.MultiIndex):
         df = df.copy()
         df.columns = df.columns.get_level_values(0)
     return df
+
+
+def _yf_retry(fn, what: str, retries: int = 3):
+    """Call a yfinance accessor, funnelling every vendor failure into ValueError.
+
+    yfinance raises its own hierarchy (YFRateLimitError and friends) rooted at
+    YFException, not at ValueError. Anything escaping raw would slip past every
+    caller's guard and surface to the user as a traceback, so it is converted
+    here to the module's error contract.
+    """
+    last_exc: Exception | None = None
+    for attempt in range(retries):
+        try:
+            return fn()
+        except Exception as exc:  # rate limits, network, vendor schema drift
+            last_exc = exc
+        if attempt < retries - 1:
+            time.sleep(1.5 * (attempt + 1))
+    raise ValueError(f"{what} unavailable from Yahoo Finance ({last_exc})")
 
 
 def yf_download(tickers, retries: int = 3, **kwargs) -> pd.DataFrame:
@@ -126,9 +149,10 @@ def fetch_spot(ticker: str) -> float:
         px = float(tk.fast_info["last_price"])
         if np.isfinite(px) and px > 0:
             return px
-    except (KeyError, TypeError, ValueError):
+    except Exception:  # includes YFRateLimitError: fall through to history
         pass
-    hist = tk.history(period="5d", auto_adjust=True)
+    hist = _yf_retry(lambda: tk.history(period="5d", auto_adjust=True),
+                     f"Spot price for '{ticker}'")
     if hist.empty:
         raise ValueError(f"Cannot determine spot price for '{ticker}'")
     return float(hist["Close"].iloc[-1])
@@ -142,7 +166,7 @@ def fetch_option_chain(ticker: str, max_expiries: int = 8,
     volume, open_interest, expiry.
     """
     tk = yf.Ticker(ticker)
-    expiries = tk.options
+    expiries = _yf_retry(lambda: tk.options, f"Option expiries for '{ticker}'")
     if not expiries:
         raise ValueError(f"'{ticker}' has no listed options on Yahoo Finance")
     spot = fetch_spot(ticker)
@@ -192,3 +216,30 @@ def fetch_option_chain(ticker: str, max_expiries: int = 8,
     if out.empty:
         raise ValueError(f"Option chain for '{ticker}' is entirely illiquid")
     return out, spot
+
+
+def load_chain_snapshot(ticker: str) -> tuple[pd.DataFrame, float, str]:
+    """Offline option chain, for when the live vendor refuses to serve.
+
+    Yahoo rate-limits the option-chain endpoint hard from shared cloud egress
+    IPs (Streamlit Community Cloud among them), so the surface would otherwise
+    be permanently unavailable to anyone visiting the hosted demo. Returns
+    (chain, spot, captured_at) — callers must label the data as a snapshot.
+    """
+    key = ticker.strip().upper()
+    csv, meta_path = SNAPSHOT_DIR / f"{key}_chain.csv.gz", SNAPSHOT_DIR / f"{key}_chain.json"
+    if not (csv.exists() and meta_path.exists()):
+        raise ValueError(f"No option-chain snapshot bundled for '{key}'")
+
+    meta = json.loads(meta_path.read_text())
+    chain = pd.read_csv(csv)
+
+    # T is time-to-expiry in years, measured at capture: re-derive it against
+    # today so the surface keeps a truthful maturity axis as the file ages.
+    now = pd.Timestamp.utcnow().tz_localize(None)
+    T = (pd.to_datetime(chain["expiry"]) + pd.Timedelta(hours=16) - now)
+    chain = chain.assign(T=T.dt.total_seconds() / (365.0 * 86400))
+    chain = chain[chain["T"] >= 3.0 / 365.0].reset_index(drop=True)
+    if chain.empty:
+        raise ValueError(f"Option-chain snapshot for '{key}' has fully expired")
+    return chain, float(meta["spot"]), str(meta["captured_at"])

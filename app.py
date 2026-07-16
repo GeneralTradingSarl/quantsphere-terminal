@@ -125,9 +125,9 @@ with st.sidebar:
     st.divider()
     st.markdown(
         '<p class="qs-note">© 2026 <b>Ismael LADJOHOUNLOU</b><br>'
-        'Released under <a href="https://www.gnu.org/licenses/agpl-3.0.html" '
-        'style="color:#00E5FF">AGPL-3.0</a> — any modification must be published '
-        'under the same terms. Commercial licensing: contact the author.</p>',
+        'Released under the <a href="https://opensource.org/license/mit" '
+        'style="color:#00E5FF">MIT License</a>. Free to use, modify and ship. '
+        'Available for consulting: contact the author.</p>',
         unsafe_allow_html=True,
     )
 
@@ -393,7 +393,18 @@ with tab_kalman:
 with tab_vol:
     try:
         with st.spinner("Pulling live option chain…"):
-            chain, spot = cached_chain(ticker)
+            try:
+                chain, spot = cached_chain(ticker)
+                captured_at = None
+            except ValueError as live_exc:
+                # Yahoo throttles option quotes from shared cloud IPs. Serve the
+                # bundled snapshot rather than a dead stage, and say so.
+                chain, spot, captured_at = qsdata.load_chain_snapshot(ticker)
+                st.info(
+                    f"Live option quotes unavailable right now ({live_exc}). "
+                    f"Showing a bundled snapshot captured {captured_at} — the "
+                    f"pricing maths below is identical, only the quotes are frozen."
+                )
         ivs = np.asarray(core.implied_vol(
             chain["mid"].to_numpy(), float(spot), chain["strike"].to_numpy(),
             chain["T"].to_numpy(), float(rf), chain["is_call"].to_numpy(bool)))
@@ -442,7 +453,8 @@ with tab_vol:
                 camera=dict(eye=dict(x=1.6, y=-1.6, z=0.65)),
             ))
             st.plotly_chart(style_fig(fig3d, height=560,
-                                      title=f"{ticker} · live implied volatility surface (OTM)"),
+                                      title=f"{ticker} · {'snapshot' if captured_at else 'live'} "
+                                            f"implied volatility surface (OTM)"),
                             use_container_width=True)
         with colsmile:
             expiries = sorted(otm["expiry"].unique())

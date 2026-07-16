@@ -5,7 +5,7 @@
 ### Institutional-grade quantitative analytics — C++20 numerical core, Python orchestration, live market data
 
 [![Live Demo](https://img.shields.io/badge/%E2%96%B6%20LIVE%20DEMO-streamlit.app-FF4B4B?style=flat-square)](https://quantsphere-terminal-7fkrgemwlfnuhqx5ky5glj.streamlit.app/)
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-00E5FF?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-00E5FF?style=flat-square)](LICENSE)
 [![C++20](https://img.shields.io/badge/engine-C%2B%2B20%20%C2%B7%20pybind11-D500F7?style=flat-square)](engine/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-00E676?style=flat-square)](requirements.txt)
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit%20%C2%B7%20Plotly-FFEA00?style=flat-square)](app.py)
@@ -128,18 +128,15 @@ python tests/test_quant.py    # 45 checks — backtester, optimizer, forecasting
 
 **Hugging Face Spaces**: create a Streamlit Space, push this repo.
 
-> ⚠️ Under AGPL-3.0, any publicly served modified version must publish its source.
-
 ## ⚖️ License & author
 
 **Réalisé par Ismael LADJOHOUNLOU** — © 2026.
 
-Licensed under the **GNU Affero General Public License v3.0** ([LICENSE](LICENSE)):
+Licensed under the **MIT License** ([LICENSE](LICENSE)):
 
-- ✅ Free to use, study, self-host and modify
-- 🔁 **Any modified version that is distributed — or offered as a network service — must publish its complete source code under the same license**
-- 🚫 Proprietary resale is therefore impossible without a separate commercial license
-- 💼 Commercial licensing available from the author
+- ✅ Free to use, study, self-host, modify and ship, including commercially
+- 📎 Keep the copyright notice; that is the whole obligation
+- 💼 Available for consulting and custom quantitative engineering
 
 ## ⚠️ Disclaimer
 
