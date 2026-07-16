@@ -26,8 +26,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          # A browser-like UA: Streamlit's edge ignores some bare bot requests.
+          # The cookie jar is load-bearing, not hygiene. Streamlit bounces a
+          # cookieless client through /-/login forever, so without -c/-b curl
+          # spins until it hits its redirect cap and exits 47. Carrying the
+          # session cookie completes the same handshake a browser does, which
+          # is also what has to happen for the request to count as traffic
+          # against the inactivity timer.
+          jar=$(mktemp)
           code=$(curl -sS -L \
+                   -c "$jar" -b "$jar" \
+                   --max-redirs 20 \
                    --max-time 60 \
                    --retry 3 --retry-delay 10 --retry-all-errors \
                    -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36' \
