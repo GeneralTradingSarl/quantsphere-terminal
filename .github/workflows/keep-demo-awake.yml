@@ -1,0 +1,50 @@
+name: Keep demo awake
+
+# Streamlit Community Cloud puts an app to sleep after ~7 days without traffic.
+# A sleeping app cannot be woken by a plain GET (it serves the "Zzzz" page and
+# waits for a human to click "Yes, get this app back up!"), so this job must run
+# often enough to prevent sleep rather than to cure it.
+#
+# GitHub disables cron workflows after 60 days of repository inactivity; if the
+# repo goes quiet, re-enable this from the Actions tab.
+
+on:
+  schedule:
+    - cron: '17 6 */2 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the live demo
+        env:
+          DEMO_URL: https://quantsphere-terminal-7fkrgemwlfnuhqx5ky5glj.streamlit.app/
+        run: |
+          set -euo pipefail
+
+          # A browser-like UA: Streamlit's edge ignores some bare bot requests.
+          code=$(curl -sS -L \
+                   --max-time 60 \
+                   --retry 3 --retry-delay 10 --retry-all-errors \
+                   -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36' \
+                   -o /tmp/demo.html \
+                   -w '%{http_code}' \
+                   "$DEMO_URL")
+
+          echo "HTTP $code"
+
+          if grep -qi 'has gone to sleep' /tmp/demo.html; then
+            echo "::error::Demo is already asleep. Wake it once by hand at $DEMO_URL, then this job will keep it up."
+            exit 1
+          fi
+
+          if [ "$code" != "200" ]; then
+            echo "::error::Unexpected status $code from $DEMO_URL"
+            exit 1
+          fi
+
+          echo "Demo is awake."
