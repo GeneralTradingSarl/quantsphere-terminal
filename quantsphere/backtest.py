@@ -45,9 +45,14 @@ def perf_metrics(returns: pd.Series, rf: float = 0.0,
     vol = float(returns.std(ddof=1)) * np.sqrt(ppy)
     mean_ann = float(returns.mean()) * ppy
     sharpe = (mean_ann - rf) / vol if vol > 0 else float("nan")
-    downside = returns[returns < 0]
-    dvol = float(downside.std(ddof=1)) * np.sqrt(ppy) if len(downside) > 1 else float("nan")
-    sortino = (mean_ann - rf) / dvol if dvol and dvol > 0 else float("nan")
+    # Downside deviation is the RMS of the shortfall below the minimum
+    # acceptable return, taken over EVERY bar, not the sample standard
+    # deviation of the losing bars alone. The latter measures dispersion
+    # among losses, so a strategy with a fixed stop (all losses identical)
+    # collapses it to zero and reports an undefined Sortino.
+    shortfall = np.minimum(returns.to_numpy(), 0.0)
+    dvol = float(np.sqrt(np.mean(shortfall ** 2))) * np.sqrt(ppy)
+    sortino = (mean_ann - rf) / dvol if dvol > 0 else float("nan")
     dd = equity / equity.cummax() - 1.0
     mdd = float(dd.min())
     calmar = cagr / abs(mdd) if mdd < -1e-12 else float("nan")

@@ -65,6 +65,26 @@ check("constant gains: zero drawdown", mm["max_drawdown"] == 0.0)
 check("constant gains: positive sharpe", mm["sharpe"] > 5)
 check("CAGR consistency", abs(mm["cagr"] - ((1.0005) ** 252 - 1)) < 1e-9)
 
+# --- Sortino: fixed-stop strategies must not collapse the denominator ------------
+# Every losing bar is exactly -1%, as a hard stop-loss produces. Measuring
+# dispersion *among* losses gives zero here; the downside deviation must be the
+# RMS shortfall over all bars, which is strictly positive.
+rng_stop = np.random.default_rng(0)
+stopped = pd.Series(np.where(rng_stop.random(400) < 0.45, -0.01, 0.012))
+ms = bt.perf_metrics(stopped)
+check("fixed-stop Sortino is finite", np.isfinite(ms["sortino"]), f"{ms['sortino']:.4f}")
+check("fixed-stop Sortino is positive", ms["sortino"] > 0)
+
+# Sortino must reward asymmetry: same volatility, losses moved into gains.
+sym = pd.Series(np.tile([-0.01, 0.01, -0.01, 0.015], 100))
+asym = pd.Series(np.tile([-0.005, 0.01, -0.005, 0.015], 100))
+check("Sortino rewards smaller losses",
+      bt.perf_metrics(asym)["sortino"] > bt.perf_metrics(sym)["sortino"])
+
+# With no losing bar at all the ratio is undefined, not infinite.
+check("no-loss series gives undefined Sortino",
+      not np.isfinite(bt.perf_metrics(pd.Series(0.0005, index=idx))["sortino"]))
+
 # --- Signals are causal (recompute on truncated data gives same past values) ----
 for name, fn in (("sma", lambda c: bt.signal_sma_cross(c, 10, 30)),
                  ("zscore", lambda c: bt.signal_zscore_meanrev(c, 20, 1.5)),
